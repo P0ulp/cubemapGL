@@ -2,14 +2,14 @@ import peasy.*;
 import java.nio.IntBuffer;
 
 IntBuffer envMapTextureID;
-IntBuffer fbo;
-IntBuffer rbo;
 
-PShader cubemapShader;
+PShader cubemapShaderReflection;
+PShader cubemapShaderRefraction;
 PeasyCam cam;
 PImage tex;
 PMatrix3D matCam;
-
+PShape glass;
+Boolean reflection = false;
 
 
 
@@ -18,19 +18,21 @@ void setup() {
   smooth();
   matCam = new PMatrix3D();
   tex =  loadImage("city.jpg");
-
  
   generateCubeMap();
   // Load cubemap shader.
-  cubemapShader = loadShader("cubemapfrag.glsl", "cubemapvert.glsl");
-  cubemapShader.set("cubemap", 1);
+  cubemapShaderReflection = loadShader("cubemapfragReflect.glsl", "cubemapvertReflect.glsl");
+  cubemapShaderReflection.set("cubemap", 1);
+  cubemapShaderRefraction = loadShader("cubemapfragRefract.glsl", "cubemapvertRefract.glsl");
+  cubemapShaderRefraction.set("cubemap", 1);
 
   cam = new PeasyCam(this, width/2, height/2, 0, 180);
 }
 
 void draw() {
-    this.getMatrix(matCam);
-    cubemapShader.set("matCam",matCam);
+  //this.getMatrix(matCam);
+  PGraphics3D g3 = (PGraphics3D)g;
+  matCam = g3.camera;
   background(0);
   pushMatrix();
   translate(width/2,height/2,0);
@@ -41,9 +43,15 @@ void draw() {
   
   
   pushMatrix();
-  shader(cubemapShader);
+  if(reflection){
+    cubemapShaderReflection.set("matCam",matCam);
+    shader(cubemapShaderReflection);
+  }
+  else{
+    cubemapShaderRefraction.set("matCam",matCam);
+    shader(cubemapShaderRefraction);
+  }
   translate(width/2,height/2,0);
-  rotateX(PI);
   sphere(25);
   box(40);
   resetShader();
@@ -134,4 +142,10 @@ void generateCubeMap(){
   }
 
   endPGL();
+}
+
+void keyPressed() {
+  if (key == ' ') {
+      reflection = !reflection;
+  } 
 }
