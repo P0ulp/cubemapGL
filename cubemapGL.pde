@@ -8,15 +8,18 @@ PShader cubemapShaderRefraction;
 PeasyCam cam;
 PImage tex;
 PMatrix3D matCam;
+PMatrix3D matCamInv;
 PShape glass;
-Boolean reflection = false;
+Boolean reflection = true;
 
 
 
 void setup() {
   size(1024, 800, P3D);
-  smooth();
+  hint(DISABLE_OPTIMIZED_STROKE);
+  
   matCam = new PMatrix3D();
+  matCamInv = new PMatrix3D();
   tex =  loadImage("city.jpg");
  
   generateCubeMap();
@@ -30,9 +33,11 @@ void setup() {
 }
 
 void draw() {
-  //this.getMatrix(matCam);
+  
   PGraphics3D g3 = (PGraphics3D)g;
   matCam = g3.camera;
+ 
+  
   background(0);
   pushMatrix();
   translate(width/2,height/2,0);
@@ -41,8 +46,7 @@ void draw() {
   texturedCube(tex);
   popMatrix();
   
-  
-  pushMatrix();
+
   if(reflection){
     cubemapShaderReflection.set("matCam",matCam);
     shader(cubemapShaderReflection);
@@ -51,8 +55,8 @@ void draw() {
     cubemapShaderRefraction.set("matCam",matCam);
     shader(cubemapShaderRefraction);
   }
+  pushMatrix();
   translate(width/2,height/2,0);
-  sphere(25);
   box(40);
   resetShader();
   popMatrix();
@@ -113,11 +117,7 @@ void generateCubeMap(){
   pgl.activeTexture(PGL.TEXTURE1);
   pgl.enable(PGL.TEXTURE_CUBE_MAP);
   pgl.bindTexture(PGL.TEXTURE_CUBE_MAP, envMapTextureID.get(0));
-  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_WRAP_S, PGL.CLAMP_TO_EDGE);
-  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_WRAP_T, PGL.CLAMP_TO_EDGE);
-  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_WRAP_R, PGL.CLAMP_TO_EDGE);
-  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_MIN_FILTER, PGL.LINEAR);
-  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_MAG_FILTER, PGL.LINEAR);
+  
 
   String[] textureNames = { 
     "posx.jpg", "negx.jpg", "posy.jpg", "negy.jpg", "posz.jpg", "negz.jpg"
@@ -140,7 +140,11 @@ void generateCubeMap(){
     }
     pgl.texImage2D(PGL.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, PGL.RGBA, w, h, 0, PGL.RGBA, PGL.UNSIGNED_BYTE, java.nio.IntBuffer.wrap(rgbaPixels));
   }
-
+  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_WRAP_S, PGL.CLAMP_TO_EDGE);
+  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_WRAP_T, PGL.CLAMP_TO_EDGE);
+  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_WRAP_R, PGL.CLAMP_TO_EDGE);
+  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_MIN_FILTER, PGL.LINEAR);
+  pgl.texParameteri(PGL.TEXTURE_CUBE_MAP, PGL.TEXTURE_MAG_FILTER, PGL.LINEAR);
   endPGL();
 }
 
