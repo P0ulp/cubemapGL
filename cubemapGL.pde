@@ -111,7 +111,7 @@ void texturedCube(PImage tex) {
 
 void generateCubeMap(){
    PGL pgl = beginPGL();
-  // create the OpenGL-based cubeMap
+  // create the OpenGL cubeMap
   envMapTextureID = IntBuffer.allocate(1);
   pgl.genTextures(1, envMapTextureID);
   pgl.activeTexture(PGL.TEXTURE1);
