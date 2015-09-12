@@ -7,8 +7,7 @@ PShader cubemapShaderReflection;
 PShader cubemapShaderRefraction;
 PeasyCam cam;
 PImage tex;
-PMatrix3D matCam;
-PMatrix3D matCamInv;
+PMatrix3D matShader;
 PShape glass;
 Boolean reflection = true;
 
@@ -16,10 +15,8 @@ Boolean reflection = true;
 
 void setup() {
   size(1024, 800, P3D);
-  hint(DISABLE_OPTIMIZED_STROKE);
   
-  matCam = new PMatrix3D();
-  matCamInv = new PMatrix3D();
+  matShader = new PMatrix3D();
   tex =  loadImage("city.jpg");
  
   generateCubeMap();
@@ -33,11 +30,8 @@ void setup() {
 }
 
 void draw() {
-  
-  PGraphics3D g3 = (PGraphics3D)g;
-  matCam = g3.camera;
- 
-  
+
+
   background(0);
   pushMatrix();
   translate(width/2,height/2,0);
@@ -46,18 +40,27 @@ void draw() {
   texturedCube(tex);
   popMatrix();
   
-
-  if(reflection){
-    cubemapShaderReflection.set("matCam",matCam);
-    shader(cubemapShaderReflection);
-  }
-  else{
-    cubemapShaderRefraction.set("matCam",matCam);
-    shader(cubemapShaderRefraction);
-  }
+  hint(DISABLE_OPTIMIZED_STROKE);
   pushMatrix();
   translate(width/2,height/2,0);
-  box(40);
+  if(reflection){
+    shader(cubemapShaderReflection);
+    
+    PGraphics3D g3 = (PGraphics3D)g;
+    matShader = g3.modelviewInv.get();
+    //matShader.transpose();
+    matShader.print();
+    cubemapShaderReflection.set("modelviewInv",matShader);
+  }
+  else{
+    shader(cubemapShaderRefraction);
+    PGraphics3D g3 = (PGraphics3D)g;
+    matShader = g3.modelviewInv.get();
+    matShader.transpose();
+
+    cubemapShaderRefraction.set("modelviewInv",matShader);
+  }
+  box(60);
   resetShader();
   popMatrix();
   
