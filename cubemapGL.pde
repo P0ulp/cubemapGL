@@ -1,21 +1,21 @@
-import peasy.*;
+import damkjer.ocd.*;
 import java.nio.IntBuffer;
 
 IntBuffer envMapTextureID;
-
+Camera cam;
 PShader cubemapShaderReflection;
-PShader cubemapShaderRefraction;
-PeasyCam cam;
+int offSetX;
+
 PImage tex;
 PMatrix3D matShader;
-PShape glass;
-Boolean reflection = true;
 
 
 
 void setup() {
   size(1024, 800, P3D);
-  
+  frameRate(60);
+  offSetX = 0;
+  cam = new Camera(this, 0, 0, 180, 0, 0, 0, 50, 4000);
   matShader = new PMatrix3D();
   tex =  loadImage("city.jpg");
  
@@ -23,48 +23,41 @@ void setup() {
   // Load cubemap shader.
   cubemapShaderReflection = loadShader("cubemapfragReflect.glsl", "cubemapvertReflect.glsl");
   cubemapShaderReflection.set("cubemap", 1);
-  cubemapShaderRefraction = loadShader("cubemapfragRefract.glsl", "cubemapvertRefract.glsl");
-  cubemapShaderRefraction.set("cubemap", 1);
-
-  cam = new PeasyCam(this, width/2, height/2, 0, 180);
 }
 
 void draw() {
-
-
+  cam.feed();
   background(0);
+
+  /* Origin */
+  box(0,100,100);
+  stroke(200,0,0);
+  line(0,0,0,250,0,0);
+  stroke(0,200,0);
+  line(0,0,0,0,250,0);
+  stroke(0,0,200);
+  line(0,0,0,0,0,250);
+  stroke(0,0,0);
+  /* End origin */
+  
   pushMatrix();
-  translate(width/2,height/2,0);
   scale(2000);
   noStroke();
   texturedCube(tex);
   popMatrix();
   
-  hint(DISABLE_OPTIMIZED_STROKE);
+  //hint(DISABLE_OPTIMIZED_STROKE);
   pushMatrix();
-  translate(width/2,height/2,0);
-  if(reflection){
-    shader(cubemapShaderReflection);
-    
-    PGraphics3D g3 = (PGraphics3D)g;
-    matShader = g3.modelviewInv.get();
-    //matShader.transpose();
-    matShader.print();
-    cubemapShaderReflection.set("modelviewInv",matShader);
-  }
-  else{
-    shader(cubemapShaderRefraction);
-    PGraphics3D g3 = (PGraphics3D)g;
-    matShader = g3.modelviewInv.get();
-    matShader.transpose();
-
-    cubemapShaderRefraction.set("modelviewInv",matShader);
-  }
+  translate(offSetX, 0, 0);
+  shader(cubemapShaderReflection);  
+  PGraphics3D g3 = (PGraphics3D)g;
+  matShader = g3.modelviewInv.get();
+  cubemapShaderReflection.set("modelviewInv",matShader);
   box(60);
   resetShader();
   popMatrix();
   
-  frame.setTitle(int(frameRate) + " fps");
+  surface.setTitle(int(frameRate) + " fps");
 }
 
 
@@ -151,8 +144,15 @@ void generateCubeMap(){
   endPGL();
 }
 
+void mouseMoved() {
+    cam.circle(radians(float(mouseX - pmouseX)/width)*360);
+}
+
 void keyPressed() {
-  if (key == ' ') {
-      reflection = !reflection;
-  } 
+ if(keyCode == 39){
+    offSetX ++;
+  }
+  else if(keyCode == 37){
+    offSetX --;
+  }
 }

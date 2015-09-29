@@ -1,1 +1,1 @@
-uniform samplerCube cubemap;varying vec3 reflectDir;void main() {	vec3 refle = reflectDir * vec3(1.0,-1.0,1.0);	gl_FragColor = textureCube(cubemap, refle);}
+uniform samplerCube cubemap;varying vec3 reflectDir;void main() {	vec3 refle = normalize(reflectDir) * vec3(1.0,-1.0,1.0);	gl_FragColor = vec4(refle,1); 	//gl_FragColor = textureCube(cubemap, refle);}
